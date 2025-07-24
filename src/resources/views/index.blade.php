@@ -179,9 +179,6 @@
 </div>
 
     <style>
-
-        .dev-select option {color: #000; /* Forcer la couleur du texte en noir */}
-        
         /* Bouton flottant en bas à droite */
         .dev-toggle-button {
             position: fixed;
@@ -423,9 +420,11 @@
 
         .dev-select:focus {
             outline: none;
-            border-color: #6366f1;
+            border-color: #6366f1!important;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
+
+         .dev-select option {color: #000!important; /* Forcer la couleur du texte en noir */}
 
         /* Responsive */
         @media (max-width: 768px) {
