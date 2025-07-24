@@ -24,7 +24,7 @@ class OnlydevController extends Controller
 
         request()->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Utilisateur changé avec succès');
+        return redirect('/')->with('success', 'Utilisateur changé avec succès');
     }
 
     private function checkLocal()
