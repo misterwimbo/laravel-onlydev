@@ -16,7 +16,14 @@ class OnlydevController extends Controller
         $this->checkLocal();
 
         session()->flush();
-        Auth::login($user);
+
+        if (class_exists(\Laravel\Jetstream\JetstreamServiceProvider::class)) {
+            // Jetstream est installé, allons-y comme des seigneurs
+            Auth::login($user);
+        } else {
+            // Pas de Jetstream ? Aucun souci, on incante directement via l’ID
+            Auth::loginUsingId($user->id);
+        }
 
         session()->put([
             'password_hash_' . Auth::getDefaultDriver() => $user->getAuthPassword(),
