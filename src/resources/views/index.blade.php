@@ -179,6 +179,9 @@
 </div>
 
     <style>
+
+        .dev-select option {color: #000; /* Forcer la couleur du texte en noir */}
+        
         /* Bouton flottant en bas à droite */
         .dev-toggle-button {
             position: fixed;
