@@ -18,7 +18,7 @@ composer require wimbo/laravel-onlydev:dev-main
 ## Fonctionnalités
 
 - Affiche une DevBar flottante uniquement en local
-- Liens vers : ((VS Code)
+- Liens vers : (VS Code)
   - Vue actuelle 
   - Controller actuel
   - Route courante
