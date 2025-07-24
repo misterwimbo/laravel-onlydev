@@ -1,5 +1,4 @@
 
-
 <!-- Bouton flottant pour ouvrir le menu dev -->
 <div id="dev-toggle-btn" class="dev-toggle-button" onclick="toggleDevMenu()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -126,7 +125,10 @@
             <select onchange="changeUser(this, '{{env('APP_URL')}}')" class="dev-select">
                 <option value="0" selected disabled>Sélectionner un utilisateur</option>
                 @foreach ($users as $user)
-                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+
+                    @php $label = $user->name ?? $user->nom ?? $user->email ?? 'ID: ' . $user->id; @endphp
+                    <option value="{{ $user->id }}">{{ $label }}</option>
+
                 @endforeach
             </select>
 
@@ -495,9 +497,3 @@
             }
         });
     </script>
-
-
-
-
-
-
