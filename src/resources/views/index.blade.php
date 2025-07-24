@@ -26,53 +26,96 @@
     </div>
     
     <div class="dev-menu-content">
-        {{-- Vue --}}
-        @if (!isset($__CURRENT_VIEW__))
-            @php $__CURRENT_VIEW__ = request()->route()->getAction()['view'] ?? null; @endphp
-        @endif
-        
+        {{-- User switcher - EN HAUT --}}
         <div class="dev-menu-item">
-            @php $viewLInk = "vscode://file/".$__CURRENT_VIEW__ ; @endphp
             <div class="dev-item-header">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Vue actuelle</span>
+                <span>Changer d'utilisateur</span>
+                <button onclick="toggleUserInfo()" class="dev-info-btn" title="Afficher les informations de l'utilisateur connecté">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="m9,12 3,3 3,-3"></path>
+                        <path d="M12 6v0"></path>
+                    </svg>
+                </button>
             </div>
-                @php $titleviewLink = str_replace('vscode://file/', '', $viewLInk); @endphp
-            <a href="{{ $viewLInk }}" class="dev-link" title="{{$titleviewLink}}" >Ouvrir dans VS Code</a>
+
+            @php $users = App\Models\User::all(); @endphp
+
+            <select onchange="changeUser(this, '{{env('APP_URL')}}')" class="dev-select">
+                <option value="0" selected disabled>Sélectionner un utilisateur</option>
+                @foreach ($users as $user)
+
+                    @php $label = $user->name ?? $user->nom ?? $user->email ?? 'ID: ' . $user->id; @endphp
+                    <option value="{{ $user->id }}">{{ $label }}</option>
+
+                @endforeach
+            </select>
+
+            <div id="user-info" style="display: none; margin-top: 10px; background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb;">
+                @auth
+                    @dump(auth()->user())
+                @else
+                    <span style="color: #6b7280;">Aucun utilisateur connecté</span>
+                @endauth
+            </div>
         </div>
-        
-        {{-- Controller --}}
+
+        {{-- Vue et Controller côte à côte --}}
         <div class="dev-menu-item">
-            @php
-                if ( isset(request()->route()->getAction()['controller']) && Str::contains(request()->route()->getAction()['controller'], 'App\\Http\\Controllers\\')) {
-                    $go = "vscode://file/".app_path(ltrim( (string) request()->route()->getAction()['controller'], 'App/Http/Controllers/'));
-                    $go = str_replace('\\','/',$go);$controller_name = request()->route()->getAction()['controller'];
-                    list($controller, $method) = explode('@', $controller_name);
-                    $reflection = new ReflectionMethod($controller, $method);
-                    $line_number = $reflection->getStartLine();
-                    $filename = $reflection->getFileName();
-                    $lien = explode('@', $go)[0].'.php:'.$line_number;
-                }
-            @endphp
-            
-            <div class="dev-item-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 2v4"></path>
-                    <path d="M16 2v4"></path>
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <path d="M3 10h18"></path>
-                </svg>
-                <span>Controller actuel</span>
+            <div class="dev-view-controller-grid">
+                {{-- Vue --}}
+                <div class="dev-view-controller-item">
+                    @if (!isset($__CURRENT_VIEW__))
+                        @php $__CURRENT_VIEW__ = request()->route()->getAction()['view'] ?? null; @endphp
+                    @endif
+                    
+                    @php $viewLInk = "vscode://file/".$__CURRENT_VIEW__ ; @endphp
+                    <div class="dev-item-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14,2 14,8 20,8"></polyline>
+                        </svg>
+                        <span>Vue actuelle</span>
+                    </div>
+                    @php $titleviewLink = str_replace('vscode://file/', '', $viewLInk); @endphp
+                    <a href="{{ $viewLInk }}" class="dev-link" title="{{$titleviewLink}}" >Ouvrir dans VS Code</a>
+                </div>
+
+                {{-- Controller --}}
+                <div class="dev-view-controller-item">
+                    @php
+                        if ( isset(request()->route()->getAction()['controller']) && Str::contains(request()->route()->getAction()['controller'], 'App\\Http\\Controllers\\')) {
+                            $go = "vscode://file/".app_path(ltrim( (string) request()->route()->getAction()['controller'], 'App/Http/Controllers/'));
+                            $go = str_replace('\\','/',$go);$controller_name = request()->route()->getAction()['controller'];
+                            list($controller, $method) = explode('@', $controller_name);
+                            $reflection = new ReflectionMethod($controller, $method);
+                            $line_number = $reflection->getStartLine();
+                            $filename = $reflection->getFileName();
+                            $lien = explode('@', $go)[0].'.php:'.$line_number;
+                        }
+                    @endphp
+                    
+                    <div class="dev-item-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 2v4"></path>
+                            <path d="M16 2v4"></path>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <path d="M3 10h18"></path>
+                        </svg>
+                        <span>Controller actuel</span>
+                    </div>
+                    @if ( isset($lien) && $lien != null)
+                        @php $titleControllerLink = str_replace('vscode://file/', '', $lien); @endphp
+                        <a href="{{ $lien }}" class="dev-link" title="{{$titleControllerLink}}"   >Ouvrir dans VS Code</a>
+                    @else
+                        <span class="dev-link-disabled">Aucun controller détecté</span>
+                    @endif
+                </div>
             </div>
-            @if ( isset($lien) && $lien != null)
-                @php $titleControllerLink = str_replace('vscode://file/', '', $lien); @endphp
-                <a href="{{ $lien }}" class="dev-link" title="{{$titleControllerLink}}"   >Ouvrir dans VS Code</a>
-            @else
-                <span class="dev-link-disabled">Aucun controller détecté</span>
-            @endif
         </div>
 
         {{-- Route actuelle --}}
@@ -187,44 +230,6 @@
             </div>
         </div>
 
-        {{-- User switcher --}}
-        <div class="dev-menu-item">
-            <div class="dev-item-header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>Changer d'utilisateur</span>
-                <button onclick="toggleUserInfo()" class="dev-info-btn" title="Afficher les informations de l'utilisateur connecté">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="m9,12 3,3 3,-3"></path>
-                        <path d="M12 6v0"></path>
-                    </svg>
-                </button>
-            </div>
-
-            @php $users = App\Models\User::all(); @endphp
-
-            <select onchange="changeUser(this, '{{env('APP_URL')}}')" class="dev-select">
-                <option value="0" selected disabled>Sélectionner un utilisateur</option>
-                @foreach ($users as $user)
-
-                    @php $label = $user->name ?? $user->nom ?? $user->email ?? 'ID: ' . $user->id; @endphp
-                    <option value="{{ $user->id }}">{{ $label }}</option>
-
-                @endforeach
-            </select>
-
-            <div id="user-info" style="display: none; margin-top: 10px; background: #f8f9fa; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb;">
-                @auth
-                    @dump(auth()->user())
-                @else
-                    <span style="color: #6b7280;">Aucun utilisateur connecté</span>
-                @endauth
-            </div>
-        </div>
-
         {{-- view Resquest->all() --}}
         @php $requestData = request()->all(); @endphp
         @if(!empty($requestData) && $requestData != '[]' && $requestData != null)
@@ -316,7 +321,7 @@
             position: fixed;
             bottom: 90px;
             right: 20px;
-            width: 420px;
+            width: 480px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
@@ -325,7 +330,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
             z-index: 999;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow: hidden;
             border: 1px solid #e5e7eb;
         }
@@ -374,7 +379,7 @@
 
         .dev-menu-content {
             padding: 18px;
-            max-height: calc(75vh - 80px);
+            max-height: calc(85vh - 80px);
             overflow-y: auto;
         }
 
@@ -511,6 +516,33 @@
         }
 
          .dev-select option {color: #000!important; /* Forcer la couleur du texte en noir */}
+
+        /* Style pour Vue et Controller côte à côte */
+        .dev-view-controller-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .dev-view-controller-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .dev-view-controller-item .dev-item-header {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .dev-view-controller-item .dev-link,
+        .dev-view-controller-item .dev-link-disabled {
+            font-size: 11px;
+            padding: 8px 12px;
+            display: block;
+            text-align: center;
+        }
 
         /* Nouvelles fonctionnalités - Sections pliables */
         .dev-section-content {
@@ -689,6 +721,15 @@
             .dev-menu {
                 width: calc(100vw - 40px);
                 right: 20px;
+            }
+            
+            .dev-view-controller-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .dev-command-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             }
         }
 
