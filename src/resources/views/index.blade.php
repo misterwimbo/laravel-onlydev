@@ -461,7 +461,7 @@
             if (url.endsWith('/')) { 
                 url = url.slice(0, -1); 
             }
-            window.location.href = url + "/onlydevChangeUser/" + id;
+           window.location.href = url + "/onlydev/change-user/" + id;
         }
 
         function toggleDevMenu() {
