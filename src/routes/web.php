@@ -8,4 +8,6 @@ Route::middleware(['web'])
     ->group(function () {
         Route::get('/change-user/{user}', [OnlydevController::class, 'onlydevChangeUser'])
             ->name('onlydev.changeUser');
+        Route::post('/execute-command', [OnlydevController::class, 'executeArtisanCommand'])
+            ->name('onlydev.executeCommand');
     });

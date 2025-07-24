@@ -1,4 +1,9 @@
 
+<!-- Balise meta pour le token CSRF -->
+@if(!app()->runningInConsole())
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endif
+
 <!-- Bouton flottant pour ouvrir le menu dev -->
 <div id="dev-toggle-btn" class="dev-toggle-button" onclick="toggleDevMenu()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -100,6 +105,85 @@
                 <a href="vscode://file/{{ storage_path('logs/laravel.log') }}" class="dev-link-small" title="{{ storage_path('logs/laravel.log') }}">Logs</a>
                 <a href="vscode://file/{{ base_path('.env') }}" class="dev-link-small" title="{{ base_path('.env') }}">.env</a>
                 <a href="vscode://file/{{ base_path('routes/web.php') }}" class="dev-link-small" title="{{ base_path('routes/web.php') }}">Routes</a>
+            </div>
+        </div>
+
+        {{-- Cache Management --}}
+        <div class="dev-menu-item">
+            <div class="dev-item-header" onclick="toggleSection('cache')" style="cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="7.5,4.21 12,6.81 16.5,4.21"></polyline>
+                    <polyline points="7.5,19.79 7.5,14.6 3,12"></polyline>
+                    <polyline points="21,12 16.5,14.6 16.5,19.79"></polyline>
+                </svg>
+                <span>Gestion du Cache</span>
+                <svg class="dev-chevron" id="cache-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+            </div>
+            <div class="dev-section-content" id="cache-section" style="display: none; margin-top: 10px;">
+                <div class="dev-command-grid">
+                    <button onclick="executeCommand('cache:clear')" class="dev-cmd-btn">
+                        <span>Vider le cache</span>
+                        <small>cache:clear</small>
+                    </button>
+                    <button onclick="executeCommand('config:clear')" class="dev-cmd-btn">
+                        <span>Config cache</span>
+                        <small>config:clear</small>
+                    </button>
+                    <button onclick="executeCommand('route:clear')" class="dev-cmd-btn">
+                        <span>Routes cache</span>
+                        <small>route:clear</small>
+                    </button>
+                    <button onclick="executeCommand('view:clear')" class="dev-cmd-btn">
+                        <span>Vues cache</span>
+                        <small>view:clear</small>
+                    </button>
+                    <button onclick="executeCommand('optimize:clear')" class="dev-cmd-btn dev-cmd-danger">
+                        <span>Tous les caches</span>
+                        <small>optimize:clear</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Database Management --}}
+        <div class="dev-menu-item">
+            <div class="dev-item-header" onclick="toggleSection('database')" style="cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                </svg>
+                <span>Base de données</span>
+                <svg class="dev-chevron" id="database-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+            </div>
+            <div class="dev-section-content" id="database-section" style="display: none; margin-top: 10px;">
+                <div class="dev-command-grid">
+                    <button onclick="executeCommand('migrate')" class="dev-cmd-btn">
+                        <span>Migrations</span>
+                        <small>migrate</small>
+                    </button>
+                    <button onclick="executeCommand('db:seed')" class="dev-cmd-btn">
+                        <span>Seeders</span>
+                        <small>db:seed</small>
+                    </button>
+                    <button onclick="executeCommand('migrate:fresh --seed')" class="dev-cmd-btn dev-cmd-danger">
+                        <span>Reset + Seed</span>
+                        <small>migrate:fresh --seed</small>
+                    </button>
+                    <button onclick="executeCommand('migrate:rollback')" class="dev-cmd-btn dev-cmd-warning">
+                        <span>Rollback</span>
+                        <small>migrate:rollback</small>
+                    </button>
+                    <button onclick="executeCommand('migrate:status')" class="dev-cmd-btn dev-cmd-info">
+                        <span>Statut</span>
+                        <small>migrate:status</small>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -232,7 +316,7 @@
             position: fixed;
             bottom: 90px;
             right: 20px;
-            width: 340px;
+            width: 420px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
@@ -241,7 +325,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
             z-index: 999;
-            max-height: 75vh;
+            max-height: 80vh;
             overflow: hidden;
             border: 1px solid #e5e7eb;
         }
@@ -428,6 +512,178 @@
 
          .dev-select option {color: #000!important; /* Forcer la couleur du texte en noir */}
 
+        /* Nouvelles fonctionnalités - Sections pliables */
+        .dev-section-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .dev-chevron {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+            color: #9ca3af;
+        }
+
+        .dev-chevron.rotated {
+            transform: rotate(180deg);
+        }
+
+        .dev-command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .dev-cmd-btn {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            text-align: center;
+            color: #374151;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dev-cmd-btn:hover {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #93c5fd;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dev-cmd-btn span {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .dev-cmd-btn small {
+            color: #6b7280;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .dev-cmd-btn.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .dev-cmd-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .dev-cmd-btn.success {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .dev-cmd-btn.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #fca5a5;
+            color: #dc2626;
+        }
+
+        /* Variantes des boutons */
+        .dev-cmd-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #fca5a5;
+            color: #dc2626;
+        }
+
+        .dev-cmd-danger:hover {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .dev-cmd-warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+
+        .dev-cmd-warning:hover {
+            background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+            border-color: #d97706;
+            color: white;
+        }
+
+        .dev-cmd-info {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #93c5fd;
+            color: #1e40af;
+        }
+
+        .dev-cmd-info:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #3b82f6 100%);
+            border-color: #2563eb;
+            color: white;
+        }
+
+        /* Modal pour les résultats */
+        .dev-result-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            z-index: 10000;
+            max-width: 600px;
+            max-height: 70vh;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dev-result-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dev-result-content {
+            padding: 20px 24px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #1f2937;
+            color: #f9fafb;
+            white-space: pre-wrap;
+        }
+
+        .dev-result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .dev-menu {
@@ -496,4 +752,129 @@
                 menu.classList.remove('active');
             }
         });
+
+        // Nouvelles fonctions pour les commandes Artisan
+        function toggleSection(sectionName) {
+            const section = document.getElementById(sectionName + '-section');
+            const chevron = document.getElementById(sectionName + '-chevron');
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                chevron.classList.add('rotated');
+            } else {
+                section.style.display = 'none';
+                chevron.classList.remove('rotated');
+            }
+        }
+
+        async function executeCommand(command) {
+            const button = event.target.closest('.dev-cmd-btn');
+            
+            // Ajouter l'état de chargement
+            button.classList.add('loading');
+            button.disabled = true;
+            
+            try {
+                // Obtenir le token CSRF
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (!token) {
+                    throw new Error('Token CSRF non trouvé');
+                }
+
+                const response = await fetch('/onlydev/execute-command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ command: command })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showCommandResult(command, result);
+                    button.classList.add('success');
+                    setTimeout(() => button.classList.remove('success'), 2000);
+                } else {
+                    showCommandError(command, result.error);
+                    button.classList.add('error');
+                    setTimeout(() => button.classList.remove('error'), 3000);
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showCommandError(command, error.message);
+                button.classList.add('error');
+                setTimeout(() => button.classList.remove('error'), 3000);
+            } finally {
+                // Retirer l'état de chargement
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        function showCommandResult(command, result) {
+            const modal = createResultModal(command, result.output, 'success');
+            document.body.appendChild(modal);
+            
+            // Auto-fermeture pour les commandes de cache
+            if (command.includes('clear') || command.includes('cache')) {
+                setTimeout(() => {
+                    if (modal.parentElement) {
+                        modal.parentElement.removeChild(modal);
+                    }
+                }, 3000);
+            }
+        }
+
+        function showCommandError(command, error) {
+            const modal = createResultModal(command, error, 'error');
+            document.body.appendChild(modal);
+        }
+
+        function createResultModal(command, content, type) {
+            // Créer l'overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'dev-result-overlay';
+            
+            // Créer la modal
+            const modal = document.createElement('div');
+            modal.className = 'dev-result-modal';
+            
+            const header = document.createElement('div');
+            header.className = 'dev-result-header';
+            
+            const title = document.createElement('h3');
+            title.style.margin = '0';
+            title.style.fontSize = '16px';
+            title.style.fontWeight = '600';
+            title.textContent = `Résultat: ${command}`;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '×';
+            closeBtn.style.cssText = 'background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;';
+            closeBtn.onclick = () => overlay.remove();
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'dev-result-content';
+            contentDiv.textContent = content || 'Commande exécutée avec succès';
+            
+            modal.appendChild(header);
+            modal.appendChild(contentDiv);
+            overlay.appendChild(modal);
+            
+            // Fermer en cliquant sur l'overlay
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                }
+            };
+            
+            return overlay;
+        }
     </script>

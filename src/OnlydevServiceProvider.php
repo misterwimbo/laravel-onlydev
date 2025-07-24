@@ -33,6 +33,13 @@ class OnlydevServiceProvider extends ServiceProvider
                     View::share('__CURRENT_VIEW__', $view->getPath());
                 }
             });
+
+            // S'assurer que le token CSRF est disponible
+            View::composer('*', function ($view) {
+                if (!app()->runningInConsole()) {
+                    $view->with('csrfToken', csrf_token());
+                }
+            });
             
         }
     }
