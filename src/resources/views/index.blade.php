@@ -43,7 +43,7 @@
                 </button>
             </div>
 
-            @php $users = App\Models\User::all(); @endphp
+            @php $users = App\Models\User::limit(20)->get(); @endphp
 
             <select onchange="changeUser(this, '{{env('APP_URL')}}')" class="dev-select">
                 <option value="0" selected disabled>Sélectionner un utilisateur</option>
